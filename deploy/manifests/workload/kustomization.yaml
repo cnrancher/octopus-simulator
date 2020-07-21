@@ -1,0 +1,6 @@
+resources:
+  - namespace.yaml
+  - modbus_rtu_daemonset.yaml
+  - modbus_tcp_deployment.yaml
+  - mqtt_deployment.yaml
+  - opcua_deployment.yaml

@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/component: "modbus-rtu"
+  name: modbus-rtu
+  namespace: system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "modbus-rtu"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: "modbus-rtu"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: beta.kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+      containers:
+        - name: socat
+          args:
+            - -d
+            - -d
+            - pty,raw,echo=0,link=/dev/ttyS001
+            - pty,raw,echo=0,link=/dev/ttyS002
+          image: alpine/socat:1.7.3.4-r0
+          volumeMounts:
+            - mountPath: /dev
+              name: dev
+        - name: simulator
+          args:
+            - modbus
+            - rtu
+          image: cnrancher/octopus-simulator:master
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: /dev
+              name: dev
+      tolerations:
+        - operator: Exists
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: dev
+          hostPath:
+            path: /dev
+            type: Directory
