@@ -19,10 +19,10 @@ Modbus simulator is mocking a thermometer, the numerical accuracy is two decimal
 
 Since Modbus can only store integer value, float value needs to be transform, e.g: float value 987.64 (quantity=1) can replace by integer value 98764 (quantity=2).
 
-- 1st Holding Register represents the temperature, and the range is between `278.15K` and `1278.15K`.
-- 2nd Holding Register represents humidity, and the range is between `10%` and `100%`.
-- 5th Holding Register represents the temperature threshold, the default value is `303.15K`.
-- 1st Coil Register indicates high temperature alarm. When the temperature exceeds the threshold, the high temperature alarm is `true`.
+- 1# Holding Register(address=0, quantity=2) represents the temperature, and the range is between `278.15K` and `1278.15K`.
+- 2# Holding Register(address=2, quantity=1) represents humidity, and the range is between `10%` and `100%`.
+- 3# Holding Register(address=5, quantity=2) represents the temperature threshold, the default value is `303.15K`.
+- 1# Coil Register(address=0, quantity=1) indicates high temperature alarm. When the temperature exceeds the threshold, the high temperature alarm is `true`.
 
 ### MQTT Simulator
 

@@ -68,7 +68,7 @@ func (in *thermometer) Mock(interval time.Duration) error {
 
 		// mocks relative humidity, unit is percent, at lease 10%
 		var holdingRegister1 = uint64(rand.Intn(10000)) + 1000
-		_, err = cli.WriteMultipleRegisters(1, 1, parseInt64ToBytes(holdingRegister1, 1))
+		_, err = cli.WriteMultipleRegisters(2, 1, parseInt64ToBytes(holdingRegister1, 1))
 		if err != nil {
 			return errors.Wrapf(err, "failed to write holding register 1, %s:%v", "value", holdingRegister1)
 		}
