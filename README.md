@@ -15,14 +15,12 @@ $ kubectl apply -f https://raw.githubusercontent.com/cnrancher/octopus-simulator
 
 ### Modbus Simulator
 
-Modbus simulator is mocking a thermometer, the numerical accuracy is two decimal places, and the measurement is Kelvin absolute temperature and relative humidity. 
+Modbus simulator is mocking a thermometer, the numerical accuracy is two decimal places, and the measurement is Kelvin absolute temperature and relative humidity.
 
-Since Modbus can only store integer value, float value needs to be transform, e.g: float value 987.64 (quantity=1) can replace by integer value 98764 (quantity=2).
-
-- 1# Holding Register(address=0, quantity=2) represents the temperature, and the range is between `278.15K` and `1278.15K`.
-- 2# Holding Register(address=2, quantity=1) represents humidity, and the range is between `10%` and `100%`.
-- 3# Holding Register(address=5, quantity=2) represents the temperature threshold, the default value is `303.15K`.
-- 1# Coil Register(address=0, quantity=1) indicates high temperature alarm. When the temperature exceeds the threshold, the high temperature alarm is `true`.
+- 1# HoldingRegister(address=0, quantity=2, type=float32) represents the realtime absolute temperature, unit is in `kevin`, its range is between `273.15` and `378.15`.
+- 2# HoldingRegister(address=2, quantity=2, type=float32) represents the humidity, unit is in `%`, its range is between `10` and `100`.
+- 3# HoldingRegister(address=4, quantity=2, type=int32) represents the absolute temperature threshold, uint is in `kevin`, the default value is `324`.
+- 1# CoilRegister(address=0, quantity=1, type=boolean) indicates high temperature alarm. When the temperature exceeds the threshold, the high temperature alarm is `true`.
 
 ### MQTT Simulator
 
