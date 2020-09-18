@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"math"
 	"math/rand"
 	"time"
 
@@ -46,8 +47,8 @@ func (in *thermometer) Close() error {
 func (in *thermometer) Mock(interval time.Duration) error {
 	var cli = modbus.NewClient(in.handler)
 
-	// defaults temperature limitation is 303.15k
-	_, _ = cli.WriteMultipleRegisters(5, 2, parseInt64ToBytes(27315+3000, 2))
+	// defaults temperature limitation is 324K
+	_, _ = cli.WriteMultipleRegisters(4, 2, convertInt32ToByteArray(324))
 
 	var ticker = time.NewTicker(interval)
 	defer ticker.Stop()
@@ -58,37 +59,39 @@ func (in *thermometer) Mock(interval time.Duration) error {
 		default:
 		}
 
-		// mocks absolute temperature, base unit is kevin, at lease 278.15K
-		var holdingRegister0 = uint64(rand.Intn(100000)) + 27315 + 500
-		_, err := cli.WriteMultipleRegisters(0, 2, parseInt64ToBytes(holdingRegister0, 2))
+		// mocks absolute temperature, base unit is kevin, range is (273.15K, 378.15K]
+		var holdingRegister0 = rand.Float32()*100 + 274.15
+		_, err := cli.WriteMultipleRegisters(0, 2, convertFloat32ToByteArray(holdingRegister0))
 		if err != nil {
 			return errors.Wrapf(err, "failed to write holding register 0, %s:%v", "value", holdingRegister0)
 		}
-		log.Info(fmt.Sprintf("Mocked absolute temperature as %vK", float64(holdingRegister0)/100))
+		log.Info(fmt.Sprintf("Mocked absolute temperature as %vK", holdingRegister0))
 
-		// mocks relative humidity, unit is percent, at lease 10%
-		var holdingRegister1 = uint64(rand.Intn(10000)) + 1000
-		_, err = cli.WriteMultipleRegisters(2, 1, parseInt64ToBytes(holdingRegister1, 1))
+		// mocks relative humidity, unit is percent, range is [10%, 100%)
+		var holdingRegister2 = rand.Float32()*90 + 10
+		_, err = cli.WriteMultipleRegisters(2, 2, convertFloat32ToByteArray(holdingRegister2))
 		if err != nil {
-			return errors.Wrapf(err, "failed to write holding register 1, %s:%v", "value", holdingRegister1)
+			return errors.Wrapf(err, "failed to write holding register 2, %s:%v", "value", holdingRegister2)
 		}
-		log.Info(fmt.Sprintf("Mocked relative humidity as %v%%", float64(holdingRegister1)/100))
+		log.Info(fmt.Sprintf("Mocked relative humidity as %v%%", holdingRegister2))
 
 		// gets temperature limitation
-		holdingRegister5Bytes, err := cli.ReadHoldingRegisters(5, 2)
+		holdingRegister4Bytes, err := cli.ReadHoldingRegisters(4, 2)
 		if err != nil {
-			return errors.Wrap(err, "failed to read holding registers 5")
+			return errors.Wrap(err, "failed to read holding registers 4")
 		}
-		var holdingRegister5 = parseBytesToInt64(holdingRegister5Bytes)
-		log.Info(fmt.Sprintf("Mocked temperature limiation is %vK", float64(holdingRegister5)/100))
+		var holdingRegister4 = parseByteArrayToInt32(holdingRegister4Bytes)
+		log.Info(fmt.Sprintf("Mocked temperature limiation is %vK", holdingRegister4))
 
 		// reports alarm
-		var coilsRegister0 = []byte{0}
-		if holdingRegister5 < holdingRegister0 {
-			log.Info("Reported high temperature alarm")
-			coilsRegister0 = []byte{1}
+		var coilsRegister0 uint16 = 0x0000
+		if holdingRegister0-float32(holdingRegister4) > 0.1 {
+			log.Info("++ Reported high temperature alarm ++")
+			coilsRegister0 = 0xFF00
+		} else {
+			log.Info("-- Removed high temperature alarm --")
 		}
-		_, err = cli.WriteMultipleCoils(0, 1, coilsRegister0)
+		_, err = cli.WriteSingleCoil(0, coilsRegister0)
 		if err != nil {
 			return errors.Wrapf(err, "failed to write coils register 0, %s:%v", "value", coilsRegister0)
 		}
@@ -101,20 +104,22 @@ func (in *thermometer) Mock(interval time.Duration) error {
 	}
 }
 
-func parseInt64ToBytes(i uint64, quantity int) []byte {
-	var buf [8]byte
-	binary.BigEndian.PutUint64(buf[:], i)
-	return buf[8-quantity*2:]
+func convertInt32ToByteArray(i int32) []byte {
+	var ret = make([]byte, 4)
+	binary.BigEndian.PutUint32(ret, uint32(i))
+	return ret
 }
 
-func parseBytesToInt64(bs []byte) uint64 {
-	var l = len(bs)
-	if l > 8 {
-		bs = bs[l-8:]
-	} else if l < 8 {
-		var tmp = make([]byte, 8)
-		copy(tmp[8-l:], bs)
-		bs = tmp
-	}
-	return binary.BigEndian.Uint64(bs)
+func parseByteArrayToInt32(bs []byte) int32 {
+	return int32(binary.BigEndian.Uint32(bs))
+}
+
+func convertFloat32ToByteArray(f float32) []byte {
+	var ret = make([]byte, 4)
+	binary.BigEndian.PutUint32(ret, math.Float32bits(f))
+	return ret
+}
+
+func parseByteArrayToFloat32(bs []byte) float32 {
+	return math.Float32frombits(binary.BigEndian.Uint32(bs))
 }
