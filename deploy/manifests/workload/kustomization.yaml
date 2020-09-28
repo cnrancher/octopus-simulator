@@ -1,5 +1,6 @@
 resources:
   - namespace.yaml
+  - ble_daemonset.yaml
   - modbus_rtu_daemonset.yaml
   - modbus_tcp_deployment.yaml
   - mqtt_deployment.yaml

@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/rancher/octopus-simulator/cmd/ble"
 	"github.com/rancher/octopus-simulator/cmd/modbus"
 	"github.com/rancher/octopus-simulator/cmd/mqtt"
 	"github.com/rancher/octopus-simulator/pkg/util/version/verflag"
@@ -16,6 +17,7 @@ const (
 )
 
 var allCommands = []*cobra.Command{
+	ble.NewCommand(),
 	modbus.NewCommand(),
 	mqtt.NewCommand(),
 }

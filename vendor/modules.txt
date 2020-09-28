@@ -8,6 +8,19 @@ github.com/256dpi/gomqtt/topic
 github.com/256dpi/gomqtt/transport
 # github.com/256dpi/mercury v0.2.0
 github.com/256dpi/mercury
+# github.com/JuulLabs-OSS/ble v0.0.0-20200716215611-d4fcc9d598bb
+github.com/JuulLabs-OSS/ble
+github.com/JuulLabs-OSS/ble/darwin
+github.com/JuulLabs-OSS/ble/linux
+github.com/JuulLabs-OSS/ble/linux/adv
+github.com/JuulLabs-OSS/ble/linux/att
+github.com/JuulLabs-OSS/ble/linux/gatt
+github.com/JuulLabs-OSS/ble/linux/hci
+github.com/JuulLabs-OSS/ble/linux/hci/cmd
+github.com/JuulLabs-OSS/ble/linux/hci/evt
+github.com/JuulLabs-OSS/ble/linux/hci/socket
+# github.com/JuulLabs-OSS/cbgo v0.0.1
+github.com/JuulLabs-OSS/cbgo
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
 # github.com/goburrow/modbus v0.1.0
@@ -22,12 +35,26 @@ github.com/inconshreveable/mousetrap
 github.com/jpillora/backoff
 # github.com/json-iterator/go v1.1.8
 github.com/json-iterator/go
+# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/mattn/go-colorable v0.1.6
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
+# github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
+github.com/mgutz/ansi
+# github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab
+github.com/mgutz/logxi/v1
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
+# github.com/raff/goble v0.0.0-20190909174656-72afc67d6a99
+github.com/raff/goble/xpc
+# github.com/sirupsen/logrus v1.5.0
+github.com/sirupsen/logrus
 # github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
@@ -47,6 +74,8 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 # golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
 golang.org/x/net/context
+# golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae
+golang.org/x/sys/unix
 # gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 gopkg.in/tomb.v2
 # k8s.io/apimachinery v0.18.5

@@ -15,7 +15,7 @@ func NewPanicsLogHandler(log logr.Logger) func(interface{}) {
 		if _, ok := r.(string); ok {
 			log.Error(nil, "observed a panic: %s\n%s", r, stacktrace)
 		} else {
-			log.Error(nil, "Observed a panic: %#v (%v)\n%s", r, r, stacktrace)
+			log.Error(nil, "observed a panic: %#v (%v)\n%s", r, r, stacktrace)
 		}
 	}
 }
