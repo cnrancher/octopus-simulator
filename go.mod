@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/256dpi/gomqtt v0.14.2
+	github.com/JuulLabs-OSS/ble v0.0.0-20200716215611-d4fcc9d598bb
 	github.com/go-logr/logr v0.1.0
 	github.com/goburrow/modbus v0.1.0
 	github.com/goburrow/serial v0.1.0

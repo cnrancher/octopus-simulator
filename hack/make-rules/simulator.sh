@@ -90,8 +90,18 @@ function build() {
 
     local os=${os_arch[0]}
     local arch=${os_arch[1]}
-    GOOS=${os} GOARCH=${arch} CGO_ENABLED=0 go build \
-      -ldflags "${version_flags} ${flags} ${ext_flags}" \
+
+    local ldflags
+    local cgo
+    if [[ "${os}" == "darwin" ]]; then
+    	ldflags="${version_flags} ${flags}"
+    	cgo=1
+		else
+			ldflags="${version_flags} ${flags} ${ext_flags}"
+			cgo=0
+    fi
+    GOOS=${os} GOARCH=${arch} CGO_ENABLED=${cgo} go build \
+      -ldflags "${ldflags}" \
       -o "${CURR_DIR}/bin/simulator_${os}_${arch}" \
       "${CURR_DIR}/cmd/simulator/main.go"
   done

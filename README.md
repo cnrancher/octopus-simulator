@@ -13,6 +13,39 @@ $ kubectl apply -f https://raw.githubusercontent.com/cnrancher/octopus-simulator
 
 ## Simulators
 
+### Bluetooth Simulator
+
+Bluetooth simulator is mocking a heart rate sensor, there are three [GATT Services](https://www.bluetooth.com/specifications/gatt/services/) in this simulated peripheral:
+
+> The endianness of all property is LittleEndian.
+
+- Device Information Service, UUID `00010000-0001-1000-8000-00805F9B34FB`.
+
+    Characteristic | Type | Property | UUID | Value
+    ---|---|---|---|---
+    System ID | string | read | `2A23` | `4EBA552F`
+    Model Number | string | read | `2A24` | `Rancher Octopus Bluetooth Device 0.0.1`
+    Serial Number| string | read | `2A25` | `CB4040E1234567`
+    Firmware Revision | string | read | `2A26` | `0.8.0`
+    Hardware Revision | read | string | `2A27` | `0.5.7`
+    Software Revision | read | string | `2A28` | `0.1.0`
+    Manufacturer Name | read | string | `2A29` | `Rancher Octopus Fake Device`
+
+- Battery Service, UUID `00020000-0001-1000-8000-00805F9B34FB`.
+
+    Characteristic | Type | Property | UUID | Value
+    ---|---|---|---|---
+    Battery Level | int8 | read | `2A19` | `100` - declines per 2 minutes
+
+- Heart Rate Service, UUID `00030000-0001-1000-8000-00805F9B34FB`.
+
+    Characteristic | Type | Property |  UUID | Value
+    ---|---|---|---|---
+    Heart Rate Measurement | float64 | notify,indicate,read | `2A37` | `control_point ± 20`
+    Body Sensor Location | int8 | read | `2A38` | `1` - chest
+    Heart Rate Control Point | float64 | write | `2A39` | `80`
+    Heart Rate New Alert | boolean | notify,indicate | `2A46` | `0` - green if rate in `control_point ± 20`, `1` - red
+
 ### Modbus Simulator
 
 Modbus simulator is mocking a thermometer, the numerical accuracy is two decimal places, and the measurement is Kelvin absolute temperature and relative humidity.

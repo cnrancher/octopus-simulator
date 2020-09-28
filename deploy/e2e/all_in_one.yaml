@@ -222,6 +222,58 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
+    app.kubernetes.io/component: ble
+    app.kubernetes.io/name: octopus
+    app.kubernetes.io/version: master
+  name: octopus-simulator-ble
+  namespace: octopus-simulator-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ble
+      app.kubernetes.io/name: octopus
+      app.kubernetes.io/version: master
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: ble
+        app.kubernetes.io/name: octopus
+        app.kubernetes.io/version: master
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/os
+                operator: In
+                values:
+                - linux
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux
+      containers:
+      - args:
+        - ble
+        env:
+        - name: NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: status.nodeName
+        image: cnrancher/octopus-simulator:master
+        imagePullPolicy: Always
+        name: simulator
+      hostNetwork: true
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - operator: Exists
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
     app.kubernetes.io/component: modbus-rtu
     app.kubernetes.io/name: octopus
     app.kubernetes.io/version: master
