@@ -17,10 +17,17 @@ $ kubectl apply -f https://raw.githubusercontent.com/cnrancher/octopus-simulator
 
 Modbus simulator is mocking a thermometer, the numerical accuracy is two decimal places, and the measurement is Kelvin absolute temperature and relative humidity.
 
-- 1# HoldingRegister(address=0, quantity=2, type=float32) represents the realtime absolute temperature, unit is in `kevin`, its range is between `273.15` and `378.15`.
-- 2# HoldingRegister(address=2, quantity=2, type=float32) represents the humidity, unit is in `%`, its range is between `10` and `100`.
-- 3# HoldingRegister(address=4, quantity=2, type=int32) represents the absolute temperature threshold, uint is in `kevin`, the default value is `324`.
-- 1# CoilRegister(address=0, quantity=1, type=boolean) indicates high temperature alarm. When the temperature exceeds the threshold, the high temperature alarm is `true`.
+> The endianness of all property is BigEndian.
+
+Name | RegisterType | Type | Property | Address | Quantity  | Value
+---|---|---|---|---|---|---
+Switch | CoilRegister | boolean | read/write | 1 | 1 | Triggers to mock, the default is `true`.
+Temperature | HoldingRegister | float32 | read | 0 | 2 | Represents the realtime absolute temperature, unit is in `kevin`, its range is between `273.15` and `378.15`.
+Humidity | HoldingRegister | float32 | read | 2 | 2 | Represents the humidity, unit is in `%`, its range is between `10` and `100`.
+High Temperature Threshold | HoldingRegister | int32 | read/write | 4 | 2 | Represents the threshold of absolute temperature, unit is in `kevin`, the default value is `324`.
+High Temperature Alarm | CoilRegister | boolean | read | 0 | 1 | Indicates high temperature alarm. When the temperature exceeds the threshold, the high temperature alarm is `true`.
+Battery | HoldingRegister | int8 | read | 6 | 1 | Represents the battery, uint is in `%`, the default value is `100`.
+Manufacturer | HoldingRegister | string | read | 7 | 14 | Indicates the manufacturer.
 
 ### MQTT Simulator
 
