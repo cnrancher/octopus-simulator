@@ -47,8 +47,31 @@ func (in *thermometer) Close() error {
 func (in *thermometer) Mock(interval time.Duration) error {
 	var cli = modbus.NewClient(in.handler)
 
+	// defaults allowing mocking is true
+	_, err := cli.WriteSingleCoil(1, 0xFF00)
+	if err != nil {
+		log.Error(err, "Failed to configure switch to default value")
+	}
+
 	// defaults temperature limitation is 324K
-	_, _ = cli.WriteMultipleRegisters(4, 2, convertInt32ToByteArray(324))
+	_, err = cli.WriteMultipleRegisters(4, 2, convertInt32ToBytes(324))
+	if err != nil {
+		log.Error(err, "Failed to configure temperature limitation to default value")
+	}
+
+	// defaults battery is 100
+	_, err = cli.WriteMultipleRegisters(6, 1, convertInt8ToBytes(100))
+	if err != nil {
+		log.Error(err, "Failed to configure battery to default value")
+	}
+	var start = time.Now()
+
+	// defaults manufacturer is Rancher Octopus Fake Factory
+	var manufacturer = "Rancher Octopus Fake Factory"
+	_, err = cli.WriteMultipleRegisters(7, (uint16(len(manufacturer))+1)/2, []byte(manufacturer))
+	if err != nil {
+		log.Error(err, "Failed to configure manufacturer to default value")
+	}
 
 	var ticker = time.NewTicker(interval)
 	defer ticker.Stop()
@@ -59,9 +82,26 @@ func (in *thermometer) Mock(interval time.Duration) error {
 		default:
 		}
 
+		// mocks or not
+		var coilsRegister1, err = cli.ReadCoils(1, 1)
+		if err != nil {
+			return errors.Wrap(err, "failed to read coils registers 1")
+		}
+		if coilsRegister1[0]&0x01 != 0x01 {
+			log.Info("Mocking is stopped")
+			select {
+			case <-in.ctx.Done():
+				return nil
+			case <-ticker.C:
+			}
+			continue
+		} else {
+			log.Info("Mocking is starting")
+		}
+
 		// mocks absolute temperature, base unit is kevin, range is (273.15K, 378.15K]
 		var holdingRegister0 = rand.Float32()*100 + 274.15
-		_, err := cli.WriteMultipleRegisters(0, 2, convertFloat32ToByteArray(holdingRegister0))
+		_, err = cli.WriteMultipleRegisters(0, 2, convertFloat32ToBytes(holdingRegister0))
 		if err != nil {
 			return errors.Wrapf(err, "failed to write holding register 0, %s:%v", "value", holdingRegister0)
 		}
@@ -69,7 +109,7 @@ func (in *thermometer) Mock(interval time.Duration) error {
 
 		// mocks relative humidity, unit is percent, range is [10%, 100%)
 		var holdingRegister2 = rand.Float32()*90 + 10
-		_, err = cli.WriteMultipleRegisters(2, 2, convertFloat32ToByteArray(holdingRegister2))
+		_, err = cli.WriteMultipleRegisters(2, 2, convertFloat32ToBytes(holdingRegister2))
 		if err != nil {
 			return errors.Wrapf(err, "failed to write holding register 2, %s:%v", "value", holdingRegister2)
 		}
@@ -80,8 +120,26 @@ func (in *thermometer) Mock(interval time.Duration) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to read holding registers 4")
 		}
-		var holdingRegister4 = parseByteArrayToInt32(holdingRegister4Bytes)
+		var holdingRegister4 = parseBytesToInt32(holdingRegister4Bytes)
 		log.Info(fmt.Sprintf("Mocked temperature limiation is %vK", holdingRegister4))
+
+		// mocks battery, unit is percent, range is [20%, 100%]
+		var holdingRegister6 = 100 - int8(time.Since(start)/time.Hour)
+		if holdingRegister6 < 20 {
+			holdingRegister6 = 20
+		}
+		_, err = cli.WriteMultipleRegisters(6, 1, convertInt8ToBytes(holdingRegister6))
+		if err != nil {
+			return errors.Wrapf(err, "failed to write holding register 6, %s:%v", "value", holdingRegister6)
+		}
+		log.Info(fmt.Sprintf("Mocked battery as %v%%", holdingRegister6))
+
+		// gets manufacturer
+		holdingRegister7, err := cli.ReadHoldingRegisters(7, 14)
+		if err != nil {
+			return errors.Wrap(err, "failed to read holding registers 7")
+		}
+		log.Info(fmt.Sprintf("Mocked manufacturer is %v", string(holdingRegister7)))
 
 		// reports alarm
 		var coilsRegister0 uint16 = 0x0000
@@ -104,22 +162,34 @@ func (in *thermometer) Mock(interval time.Duration) error {
 	}
 }
 
-func convertInt32ToByteArray(i int32) []byte {
+func convertInt8ToBytes(i int8) []byte {
+	var ret = make([]byte, 2)
+	binary.BigEndian.PutUint16(ret, uint16(i))
+	return ret
+}
+
+func convertInt32ToBytes(i int32) []byte {
 	var ret = make([]byte, 4)
 	binary.BigEndian.PutUint32(ret, uint32(i))
 	return ret
 }
 
-func parseByteArrayToInt32(bs []byte) int32 {
-	return int32(binary.BigEndian.Uint32(bs))
-}
-
-func convertFloat32ToByteArray(f float32) []byte {
+func convertFloat32ToBytes(f float32) []byte {
 	var ret = make([]byte, 4)
 	binary.BigEndian.PutUint32(ret, math.Float32bits(f))
 	return ret
 }
 
-func parseByteArrayToFloat32(bs []byte) float32 {
+func convertFloat64ToBytes(f float64) []byte {
+	var ret = make([]byte, 8)
+	binary.BigEndian.PutUint64(ret, math.Float64bits(f))
+	return ret
+}
+
+func parseBytesToInt32(bs []byte) int32 {
+	return int32(binary.BigEndian.Uint32(bs))
+}
+
+func parseBytesToFloat32(bs []byte) float32 {
 	return math.Float32frombits(binary.BigEndian.Uint32(bs))
 }
