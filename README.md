@@ -93,7 +93,23 @@ MQTT simulator is mocking kitchen door, kitchen light, living room light and bed
 
 ### OPC-UA Simulator
 
-OPC-UA simulator is [open62541/open62541](https://hub.docker.com/r/open62541/open62541).
+OPC-UA simulator is [open62541/open62541:1.0](https://hub.docker.com/r/open62541/open62541/tags).
+
+Name | Type | Property | NodeID | Value
+---|---|---|---|---
+the answer| Int32 | read/write | `ns=1;s=the.answer` | `42`.
+example bytestring | ByteString | read/write | `ns=1;s=myByteString` | `0x74657374313233`(string is `test123\0test123`)
+Boolean - 0 | Boolean | read | `ns=1;i=43001` | random change
+Int16 - 100 | Int16 | read | `ns=1;i=43101` | random change
+Uint16 - 200 | Uint16 | read | `ns=1;i=43201` | random change
+Int32 - 300 | Int32 | read | `ns=1;i=43301` | random change
+Uint32 - 400 | Uint32 | read | `ns=1;i=43401` | random change
+Int64 - 500 | Int64 | read | `ns=1;i=43501` | random change
+Uint64 - 600 | Uint64 | read | `ns=1;i=43601` | random change
+Float - 700 | Float | read | `ns=1;i=43701` | random change
+Double - 800 | Double | read | `ns=1;i=43801` | random change
+String - 900 | String | read | `ns=1;i=43901` | random change
+ByteString - 1100 | ByteString | read | `ns=1;i=44101` | random change
 
 ## License
 Copyright (c) 2020 [Rancher Labs, Inc.](http://rancher.com)
