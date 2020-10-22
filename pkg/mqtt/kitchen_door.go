@@ -1,7 +1,10 @@
 package mqtt
 
 import (
+	"bytes"
 	"context"
+	"encoding/binary"
+	"math"
 	"time"
 
 	"github.com/256dpi/gomqtt/client"
@@ -48,16 +51,41 @@ func (in *kitchenDoor) init(address string) error {
 	}
 
 	// publishes
-	var initPublishMessages = map[string]string{
-		"cattle.io/octopus/home/status/kitchen/door/state":               "open",
-		"cattle.io/octopus/home/status/kitchen/door/width":               "1.2",
-		"cattle.io/octopus/home/status/kitchen/door/height":              "1.8",
-		"cattle.io/octopus/home/status/kitchen/door/production_material": "wood",
+	var initPublishMessages = map[string][]byte{
+		// text
+		"cattle.io/octopus/home/status/kitchen/door/state":               []byte("open"),
+		"cattle.io/octopus/home/status/kitchen/door/width":               []byte("1.2"),
+		"cattle.io/octopus/home/status/kitchen/door/height":              []byte("1.8"),
+		"cattle.io/octopus/home/status/kitchen/door/production_material": []byte("wood"),
+
+		// bytes
+		"cattle.io/octopus/home/status/kitchen/door_bytes/state": func() (data []byte) {
+			var s = []int32("open")
+			var bs bytes.Buffer
+			_ = binary.Write(&bs, binary.BigEndian, s)
+			return bs.Bytes()
+		}(),
+		"cattle.io/octopus/home/status/kitchen/door_bytes/width": func() (data []byte) {
+			data = make([]byte, 4)
+			binary.BigEndian.PutUint32(data, math.Float32bits(float32(1.2)))
+			return
+		}(),
+		"cattle.io/octopus/home/status/kitchen/door_bytes/height": func() (data []byte) {
+			data = make([]byte, 4)
+			binary.BigEndian.PutUint32(data, math.Float32bits(float32(1.8)))
+			return
+		}(),
+		"cattle.io/octopus/home/status/kitchen/door_bytes/production_material": func() (data []byte) {
+			var s = []int32("wood")
+			var bs bytes.Buffer
+			_ = binary.Write(&bs, binary.BigEndian, s)
+			return bs.Bytes()
+		}(),
 	}
 	for topic, message := range initPublishMessages {
 		var gf, err = cli.Publish(
 			topic,
-			[]byte(message),
+			message,
 			packet.QOSAtLeastOnce,
 			true,
 		)

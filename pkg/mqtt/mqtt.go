@@ -88,6 +88,7 @@ func newMemoryBroker(address string) (*memoryBroker, error) {
 	}
 
 	var backend = broker.NewMemoryBackend()
+	backend.SessionQueueSize = 1024
 	if logflag.GetLogVerbosity() > 4 {
 		backend.Logger = func(e broker.LogEvent, c *broker.Client, pkt packet.Generic, msg *packet.Message, err error) {
 			if err != nil {
@@ -127,13 +128,13 @@ func (in mockers) Close() error {
 func (in mockers) Mock(interval time.Duration) error {
 	var wg sync.WaitGroup
 	defer wg.Wait()
-	for _, mocker := range in {
-		if mocker != nil {
+	for _, m := range in {
+		if m != nil {
 			wg.Add(1)
-			go func() {
+			go func(m mocker) {
 				defer wg.Done()
-				_ = mocker.Mock(interval)
-			}()
+				_ = m.Mock(interval)
+			}(m)
 		}
 	}
 	return nil

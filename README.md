@@ -66,63 +66,71 @@ Manufacturer | HoldingRegister | string | read | 7 | 14 | Indicates the manufact
 
 MQTT simulator is mocking kitchen door, kitchen light, living room light and bedroom light.
 
+> The endianness of all bytes property is BigEndian.
+
 - Kitchen door Pub/Sub information
 
-    ```yaml
-    # -- sub
-    cattle.io/octopus/home/status/kitchen/door/state -> open
-    cattle.io/octopus/home/status/kitchen/door/width -> 1.2
-    cattle.io/octopus/home/status/kitchen/door/height -> 1.8
-    cattle.io/octopus/home/status/kitchen/door/production_material -> wood
-    ```
+    Name | Topic | Type | Property | Value
+    ---|---|---|---|---
+    State | `cattle.io/octopus/home/status/kitchen/door/state`(subscribe)<br/> `cattle.io/octopus/home/status/kitchen/door_bytes/state`(subscribe) | string(text)<br/> string(bytes) | read | `open`
+    Width | `cattle.io/octopus/home/status/kitchen/door/width`(subscribe)<br/> `cattle.io/octopus/home/status/kitchen/door_bytes/width`(subscribe) | float(text)<br/> float(bytes) | read | unit is meter, `1.2`
+    Height | `cattle.io/octopus/home/status/kitchen/door/height`(subscribe)<br/> `cattle.io/octopus/home/status/kitchen/door_bytes/height`(subscribe) | float(text)<br/> float(bytes) | read | unit is meter, `1.8`
+    Material | `cattle.io/octopus/home/status/kitchen/door/production_material`(subscribe)<br/> `cattle.io/octopus/home/status/kitchen/door_bytes/production_material`(subscribe) | string(text)<br/> string(bytes) | read | `wood`
 
 - Kitchen light Pub/Sub information
 
-    ```yaml
-    # -- sub
-    cattle.io/octopus/home/status/kitchen/light/switch -> false
-    cattle.io/octopus/home/get/kitchen/light/gear -> low
-    cattle.io/octopus/home/status/kitchen/light/parameter_power -> 3.0
-    cattle.io/octopus/home/status/kitchen/light/parameter_luminance -> 245
-    cattle.io/octopus/home/status/kitchen/light/manufacturer -> Rancher Octopus Fake Device
-    cattle.io/octopus/home/status/kitchen/light/production_date -> 2020-07-08T13:24:00.00Z
-    cattle.io/octopus/home/status/kitchen/light/service_life -> P10Y0M0D
-    
-    # -- pub
-    # select from `true, false`
-    cattle.io/octopus/home/set/kitchen/light/switch <- true
-    # select from `[low, mid, high]`, change to `parameter_luminance`
-    cattle.io/octopus/home/control/kitchen/light/gear <- low
-    ```
+    Name | Topic | Type | Property | Value
+    ---|---|---|---|---
+    Switch | `cattle.io/octopus/home/status/kitchen/light/switch`(subscribe)<br/> `cattle.io/octopus/home/set/kitchen/light/switch`(publish) | boolean(text) | read<br/> write | the default value is `false`
+    Gear | `cattle.io/octopus/home/get/kitchen/light/gear`(subscribe)<br/> `cattle.io/octopus/home/control/kitchen/light/gear`(publish) | string(text) | read<br/> write | select from (low, mid, high), the default value is `low`
+    Power | `cattle.io/octopus/home/status/kitchen/light/parameter_power`(subscribe) | float(text) | read | unit is watter, `3.0`
+    Luminance | `cattle.io/octopus/home/status/kitchen/light/parameter_luminance`(subscribe) | int(text) | read | unit is luminance, the default value is `245`, changed by gear
+    Manufacturer | `cattle.io/octopus/home/status/kitchen/light/manufacturer`(subscribe) | string(text) | read | `Rancher Octopus Fake Device`
+    ProductionDate | `cattle.io/octopus/home/status/kitchen/light/production_date`(subscribe) | string(text) | read | `2020-07-08T13:24:00.00Z`
+    ServiceLife | `cattle.io/octopus/home/status/kitchen/light/service_life`(subscribe) | string(text) | read | `P10Y0M0D`
 
 - Living room light Pub/Sub information
 
-    ```yaml
-    # -- sub
-    cattle.io/octopus/home/livingroom/light/switch -> false
-    cattle.io/octopus/home/livingroom/light/gear -> low
-    cattle.io/octopus/home/livingroom/light/parameter -> [{"name":"power","value":"70.0w"},{"name":"luminance","value":"4900lm"}]
-    cattle.io/octopus/home/livingroom/light/production -> {"manufacturer":"Rancher Octopus Fake Device","date":"2020-07-09T13:00:00.00Z","serviceLife":"P10Y0M0D"}
-    
-    # -- pub
-    # select from `true, false`
-    cattle.io/octopus/home/livingroom/light/switch/set <- true
-    # select from `[low, mid, high]`, change to `parameter[1].value`
-    cattle.io/octopus/home/livingroom/light/gear/set <- low
-    ```
+    Name | Topic | Type | Property | Value
+    ---|---|---|---|---
+    Switch | `cattle.io/octopus/home/livingroom/light/switch`(subscribe)<br/> `cattle.io/octopus/home/livingroom/light/switch/set`(publish) | boolean(text) | read<br/> write | the default value is `false`
+    Gear | `cattle.io/octopus/home/livingroom/light/gear`(subscribe)<br/> `cattle.io/octopus/home/livingroom/light/gear/set`(publish) | string(text) | read<br/> write | select from (low, mid, high), the default value is `low`
+    Parameter | `cattle.io/octopus/home/livingroom/light/parameter`(subscribe) | string(text) | read | `[{"name":"power","value":"70.0w"},{"name":"luminance","value":"4900lm"}]`, the luminance value will change by gear
+    Production | `cattle.io/octopus/home/livingroom/light/production`(subscribe) | string(text) | read | `{"manufacturer":"Rancher Octopus Fake Device","date":"2020-07-09T13:00:00.00Z","serviceLife":"P10Y0M0D"}`
 
 - Bedroom light Pub/Sub information
 
-    ```yaml
-    # -- sub
-    cattle.io/octopus/home/bedroom/light -> {"switch":false,"action":{"gear":"low"},"parameter":{"power":24.3,"luminance":1800},"production":{"manufacturer":"Rancher Octopus Fake Device","date":"2020-07-20T13:24:00.00Z","serviceLife":"P10Y0M0D"}}
+    Total properties compress in a JSON-format message, please subscribe the `cattle.io/octopus/home/bedroom/light` topic to get the device information, or publish to `cattle.io/octopus/home/bedroom/light/set` topic to change the device.
     
-    # -- pub
-    # select from `true, false`
-    cattle.io/octopus/home/bedroom/light/set <- {"switch":true}
-    # select from `[low, mid, high]`, change to `parameter.luminance`
-    cattle.io/octopus/home/bedroom/light/set <- {"action":{"gear":"low"}}
+    ```json
+    {
+      "switch": false,
+      "action": {
+        "gear": "low"
+      },
+      "parameter": {
+        "power": 24.3,
+        "luminance": 1800
+      }, 
+      "production": {
+        "manufacturer": "Rancher Octopus Fake Device",
+        "date": "2020-07-20T13:24:00.00Z",
+        "serviceLife": "P10Y0M0D"
+      }
+    }
     ```
+  
+    Name | Path | Type | Property | Value
+    ---|---|---|---|---
+    Switch | `switch` | boolean(text) | read/write | the default value is `false`
+    Gear | `action.gear` | string(text) | read/write | select from (low, mid, high), the default value is `low`
+    Power | `parameter.power` | float(text) | read | unit is watter, `24.3`
+    Luminance | `parameter.luminance` | int(text) | read | unit is luminance, the default value is `1800`
+    Manufacturer | `production.manufacturer` | string(text) | read | `Rancher Octopus Fake Device`
+    ProductionDate | `production.date` | string(text) | read | `2020-07-08T13:24:00.00Z`
+    ServiceLife | `production.serviceLife` | string(text) | read | `P10Y0M0D`
+  
+    By default, the light is turn off, please publish `{"switch":true}` to turn on it, and publish `{"action":{"gear":"low"}}` to change the default gear if needed.
 
 ### OPC-UA Simulator
 

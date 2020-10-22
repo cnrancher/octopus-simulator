@@ -109,7 +109,7 @@ func (in *kitchenLight) init(address string) error {
 				defer in.Unlock()
 
 				switch v := msg.(type) {
-				case *packet.Message:
+				case packet.Message:
 					switch v.Topic {
 					case "cattle.io/octopus/home/set/kitchen/light/switch":
 						var on = string(v.Payload)

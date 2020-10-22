@@ -1,6 +1,7 @@
 package modbus
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
@@ -67,8 +68,8 @@ func (in *thermometer) Mock(interval time.Duration) error {
 	var start = time.Now()
 
 	// defaults manufacturer is Rancher Octopus Fake Factory
-	var manufacturer = "Rancher Octopus Fake Factory"
-	_, err = cli.WriteMultipleRegisters(7, (uint16(len(manufacturer))+1)/2, []byte(manufacturer))
+	var manufacturer = convertStringToBytes("Rancher Octopus Fake Factory")
+	_, err = cli.WriteMultipleRegisters(7, uint16(len(manufacturer)>>1), manufacturer)
 	if err != nil {
 		log.Error(err, "Failed to configure manufacturer to default value")
 	}
@@ -135,7 +136,7 @@ func (in *thermometer) Mock(interval time.Duration) error {
 		log.Info(fmt.Sprintf("Mocked battery as %v%%", holdingRegister6))
 
 		// gets manufacturer
-		holdingRegister7, err := cli.ReadHoldingRegisters(7, 14)
+		holdingRegister7, err := cli.ReadHoldingRegisters(7, uint16(len(manufacturer)>>1))
 		if err != nil {
 			return errors.Wrap(err, "failed to read holding registers 7")
 		}
@@ -172,6 +173,12 @@ func convertInt32ToBytes(i int32) []byte {
 	var ret = make([]byte, 4)
 	binary.BigEndian.PutUint32(ret, uint32(i))
 	return ret
+}
+
+func convertStringToBytes(s string) []byte {
+	var buf bytes.Buffer
+	_ = binary.Write(&buf, binary.BigEndian, []int32(s))
+	return buf.Bytes()
 }
 
 func convertFloat32ToBytes(f float32) []byte {
